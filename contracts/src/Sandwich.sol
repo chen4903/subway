@@ -8,8 +8,7 @@ import "./lib/SafeTransfer.sol";
 contract Sandwich {
     using SafeTransfer for IERC20;
 
-    // Authorized
-    address internal immutable user;
+    address internal immutable owner;
 
     // transfer(address,uint256)
     bytes4 internal constant ERC20_TRANSFER_ID = 0xa9059cbb;
@@ -17,16 +16,15 @@ contract Sandwich {
     // swap(uint256,uint256,address,bytes)
     bytes4 internal constant PAIR_SWAP_ID = 0x022c0d9f;
 
-    // Contructor sets the only user
     receive() external payable {}
 
     constructor(address _owner) {
-        user = _owner;
+        owner = _owner;
     }
 
     // *** Receive profits from contract *** //
-    function recoverERC20(address token) public {
-        require(msg.sender == user, "shoo");
+    function recoverERC20(address token) external {
+        require(msg.sender == owner, "not owner");
         IERC20(token).safeTransfer(
             msg.sender,
             IERC20(token).balanceOf(address(this))
@@ -44,24 +42,20 @@ contract Sandwich {
         - pair: address         - Univ2 pair you're sandwiching on
         - amountIn: uint128     - Amount you're giving via swap
         - amountOut: uint128    - Amount you're receiving via swap
-        - tokenOutNo: uint8     - Is the token you're giving token0 or token1? (On univ2 pair)
+        - tokenOutNo: uint8     - Is the token you're giving token0 or token1? (On uniswap V2 pair)
 
         Note: This fallback function generates some dangling bits
     */
     fallback() external payable {
         // Assembly cannot read immutable variables
-        address memUser = user;
+        address memOwner = owner;
 
         assembly {
-            // You can only access teh fallback function if you're authorized
-            if iszero(eq(caller(), memUser)) {
+            // only owner
+            if iszero(eq(caller(), memOwner)) {
                 // Ohm (3, 3) makes your code more efficient
-                // WGMI
                 revert(3, 3)
             }
-
-            // Extract out teh variables
-            // We don't have function signatures sweet saving EVEN MORE GAS
 
             // bytes20
             let token := shr(96, calldataload(0x00))
@@ -85,7 +79,6 @@ contract Sandwich {
 
             let s1 := call(sub(gas(), 5000), token, 0, 0x7c, 0x44, 0, 0)
             if iszero(s1) {
-                // WGMI
                 revert(3, 3)
             }
 
