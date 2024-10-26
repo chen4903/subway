@@ -42,7 +42,6 @@ export const binarySearch = (
 /*
   Calculate the max sandwich amount
 */
-
 export const calcSandwichOptimalIn = (
   userAmountIn,
   userMinRecvToken,

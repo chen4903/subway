@@ -20,7 +20,10 @@ export const match = (a, b, caseIncensitive = true) => {
 };
 
 // JSON.stringify from ethers.BigNumber is pretty horrendous
-// So we have a custom stringify functino
+// So we have a custom stringify function
+// E.g., 
+//    const bnArray = [ethers.BigNumber.from("1000000000000000000"), ethers.BigNumber.from("2000000000000000000")];
+//    console.log(stringifyBN(bnArray)); // output: ["1000000000000000000", "2000000000000000000"]
 export const stringifyBN = (o, toHex = false) => {
   if (o === null || o === undefined) {
     return o;
@@ -43,14 +46,23 @@ export const stringifyBN = (o, toHex = false) => {
   }
 };
 
+// Convert the BigNumber object in the ethers.js library to a hexadecimal string 
+// format suitable for Ethereum JSON-RPC calls. 
+// This format requires the string to start with "0x" and not contain any leading 
+// zeros unless the value is zero, in which case the string should be "0x0"
 export const toRpcHexString = (bn) => {
+  // 1. BigNumber(100)
   let val = bn.toHexString();
+  // 2. "0x3e8"
+
+  // 3. "0x" + "3e8"
   val = "0x" + val.replace("0x", "").replace(/^0+/, "");
 
   if (val == "0x") {
     val = "0x0";
   }
 
+  // 4. "0x3e8"
   return val;
 };
 

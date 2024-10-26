@@ -109,11 +109,17 @@ export const getUniv2DataGivenOut = (bOut, reserveA, reserveB) => {
 
   We do this as Univ2 router swaps can swap over "paths". In this example, we're only doing
   WETH <> TOKEN sandwiches. Thus, we only care about the minRecv for the path DIRECTLY AFTER WETH
+
+  Only works for swapExactETHForTokens
+
+  Example:
+  path = ["ETH", "WETH", "DAI", "USDC"], we want to get 100 USDC
+  1. i = 3: fromToken = DAI, toToken = USDC. Get the amountIn of DAI: x1
+  2. i = 2: fromToken = WETH, toToken = DAI. Get the amountIn of WETH: x2
+  3. i = 1: stop. So x2 is the minimal DAI after we swap ETH for DAI 
 */
 export const getUniv2ExactWethTokenMinRecv = async (finalMinRecv, path) => {
   let userMinRecv = finalMinRecv;
-
-  // Only works for swapExactETHForTokens
 
   // Computes lowest amount of token (directly after WETH)
   for (let i = path.length - 1; i > 1; i--) {
